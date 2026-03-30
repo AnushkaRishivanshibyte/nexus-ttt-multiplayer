@@ -1,5 +1,0 @@
-Flask
-Flask-SocketIO
-Flask-Cors
-eventlet
-gunicorn

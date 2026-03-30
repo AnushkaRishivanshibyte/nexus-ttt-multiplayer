@@ -3,3 +3,9 @@ node_modules/
 .env.local
 *.log
 .DS_Store
+
+# Exclude Python files so Railway doesn't get confused
+app.py
+requirements.txt
+__pycache__/
+*.pyc
