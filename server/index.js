@@ -268,5 +268,5 @@ setInterval(() => {
   }
 }, 3600000);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 server.listen(PORT, '0.0.0.0', () => console.log(`🎮 NEXUS X·O server running on port ${PORT}`));
