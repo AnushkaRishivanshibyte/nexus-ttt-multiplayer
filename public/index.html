@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NEXUS X·O — Multiplayer Tic Tac Toe</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<!-- Socket.IO is required for Multiplayer -->
+<script src="/socket.io/socket.io.js"></script>
+</head>
+<body class="theme-neon">
+
+<!-- BG -->
+<div class="orbs"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
+<div class="grid-bg"></div>
+<div class="scanline"></div>
+
+<!-- ════════════════════════════════
+     COVER
+════════════════════════════════ -->
+<div id="cover" class="screen active">
+  <div class="cover-inner">
+
+    <div class="top-badge"><span class="badge-pulse"></span>AI-POWERED & ONLINE MULTIPLAYER</div>
+
+    <div class="game-title-wrap">
+      <div class="game-name-line">
+        <span class="gn-x">X</span><span class="gn-dot">·</span><span class="gn-o">O</span>
+      </div>
+      <div class="game-wordmark">NEXUS</div>
+      <div class="game-subtitle">Tic · Tac · Toe &nbsp;|&nbsp; Artificial Intelligence & Multiplayer</div>
+    </div>
+
+    <div class="hero-board-wrap">
+      <div class="hero-board" id="hero-board">
+        <div class="hcell hx">X</div><div class="hcell he">·</div><div class="hcell ho">O</div>
+        <div class="hcell he">·</div><div class="hcell hx">X</div><div class="hcell he">·</div>
+        <div class="hcell ho">O</div><div class="hcell he">·</div><div class="hcell hx">X</div>
+      </div>
+      <div class="hero-label">Live preview · animates automatically</div>
+    </div>
+
+    <div class="cover-ctas">
+      <button class="btn-play" onclick="showScreen('setup')">▶ &nbsp;PLAY NOW</button>
+      <button class="btn-outline" onclick="openHowTo()">? &nbsp;How to Play</button>
+    </div>
+
+    <!-- ─── SETTINGS BAR ─── -->
+    <div class="settings-bar">
+
+      <button class="sbar-btn" id="sbar-theme" onclick="toggleThemePanel()">
+        <span class="sbar-icon">🎨</span><span class="sbar-txt">Theme</span>
+      </button>
+
+      <div class="sbar-divider"></div>
+
+      <button class="sbar-btn" id="sbar-ai" onclick="quickMode('ai')">
+        <span class="sbar-icon">🤖</span><span class="sbar-txt">AI</span>
+      </button>
+      <button class="sbar-btn" id="sbar-2p" onclick="quickMode('2p')">
+        <span class="sbar-icon">👥</span><span class="sbar-txt">2P</span>
+      </button>
+      <button class="sbar-btn" id="sbar-online" onclick="quickMode('online')">
+        <span class="sbar-icon">🌐</span><span class="sbar-txt">Online</span>
+      </button>
+
+      <div class="sbar-divider"></div>
+
+      <button class="sbar-btn" id="sbar-diff" onclick="cycleDiff()">
+        <span class="sbar-icon" id="sbar-diff-icon">🟢</span>
+        <span class="sbar-txt" id="sbar-diff-txt">Easy</span>
+      </button>
+
+      <div class="sbar-divider"></div>
+
+      <div class="mode-toggle">
+        <span class="mode-lbl" id="ml-dark">🌙</span>
+        <button class="mode-toggle-pill on" id="mode-pill" onclick="toggleMode()">
+          <div class="mode-toggle-knob"></div>
+        </button>
+        <span class="mode-lbl" id="ml-light">☀️</span>
+      </div>
+
+      <div class="sbar-divider"></div>
+
+      <button class="sbar-btn" onclick="showScreen('setup')">
+        <span class="sbar-icon">⚙️</span><span class="sbar-txt">Settings</span>
+      </button>
+
+    </div>
+
+    <!-- Inline theme panel -->
+    <div id="theme-panel" style="display:none;margin-top:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;width:100%;max-width:760px;animation:fadeUp 0.25s ease;">
+      <div style="font-family:var(--font-m);font-size:0.54rem;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;">SELECT THEME</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div class="tswatch picked" data-theme="neon" onclick="pickTheme('neon')">
+          <div class="sdots"><div class="sd" style="background:#00f0e0"></div><div class="sd" style="background:#ff2d6e"></div><div class="sd" style="background:#4f8fff"></div></div>
+          <div class="tname">Neon</div>
+        </div>
+        <div class="tswatch" data-theme="retro" onclick="pickTheme('retro')">
+          <div class="sdots"><div class="sd" style="background:#ffe066"></div><div class="sd" style="background:#ff6b35"></div><div class="sd" style="background:#00d4aa"></div></div>
+          <div class="tname">Retro</div>
+        </div>
+        <div class="tswatch" data-theme="ice" onclick="pickTheme('ice')">
+          <div class="sdots"><div class="sd" style="background:#7dd3fc"></div><div class="sd" style="background:#a78bfa"></div><div class="sd" style="background:#38bdf8"></div></div>
+          <div class="tname">Ice</div>
+        </div>
+        <div class="tswatch" data-theme="fire" onclick="pickTheme('fire')">
+          <div class="sdots"><div class="sd" style="background:#fb923c"></div><div class="sd" style="background:#ef4444"></div><div class="sd" style="background:#fbbf24"></div></div>
+          <div class="tname">Fire</div>
+        </div>
+        <div class="tswatch" data-theme="forest" onclick="pickTheme('forest')">
+          <div class="sdots"><div class="sd" style="background:#4ade80"></div><div class="sd" style="background:#a3e635"></div><div class="sd" style="background:#34d399"></div></div>
+          <div class="tname">Forest</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SETUP
+════════════════════════════════ -->
+<div id="setup" class="screen">
+  <div class="setup-wrap">
+    <button class="back-btn" onclick="showScreen('cover')">← Back</button>
+    <div class="setup-card">
+      <div class="setup-hd">
+        <div class="setup-hd-l">
+          <div class="setup-title">NEW GAME</div>
+          <div class="setup-sub">Configure your session</div>
+        </div>
+        <div class="setup-steps">
+          <div class="spip on"></div><div class="spip on"></div><div class="spip on"></div>
+        </div>
+      </div>
+      <div class="setup-body">
+
+        <!-- Session name -->
+        <div>
+          <div class="slbl">Game Session Name</div>
+          <input class="sname-input" id="session-name" type="text" placeholder="MY GAME" maxlength="20" value="MY GAME">
+        </div>
+
+        <!-- Game mode -->
+        <div>
+          <div class="slbl">Game Mode</div>
+          <div class="tog-group">
+            <button class="tog sel ca" id="s-mode-ai" onclick="setupMode('ai')">🤖 VS Computer</button>
+            <button class="tog" id="s-mode-2p" onclick="setupMode('2p')">👥 2 Players</button>
+            <button class="tog" id="s-mode-on" onclick="setupMode('online')">🌐 Online</button>
+          </div>
+        </div>
+
+        <!-- Player names -->
+        <div>
+          <div class="slbl">Player Names</div>
+          <div class="pname-row">
+            <div class="pname-g">
+              <label class="pname-lbl lx" id="lbl-x">✕ Player X</label>
+              <input class="pname-inp" id="name-x" type="text" placeholder="Enter name" maxlength="14" value="Player X">
+            </div>
+            <div class="pname-g" id="pname-o-group">
+              <label class="pname-lbl lo" id="lbl-o">○ Computer</label>
+              <input class="pname-inp" id="name-o" type="text" placeholder="Enter name" maxlength="14" value="Computer">
+            </div>
+          </div>
+        </div>
+
+        <!-- Difficulty — shown for both AI, 2P and Online -->
+        <div id="diff-section">
+          <div class="slbl">Difficulty &amp; Grid Size</div>
+          <div class="lvl-grid">
+            <div class="lvl-card picked" id="lvl-easy" onclick="pickLevel('easy')">
+              <div class="lvl-icon">🟢</div>
+              <div class="lvl-name">EASY</div>
+              <div class="lvl-grid-badge">3 × 3</div>
+              <div class="lvl-desc" id="lbl-easy-desc">Win with 3</div>
+            </div>
+            <div class="lvl-card" id="lvl-medium" onclick="pickLevel('medium')">
+              <div class="lvl-icon">🟡</div>
+              <div class="lvl-name">MEDIUM</div>
+              <div class="lvl-grid-badge">5 × 5</div>
+              <div class="lvl-desc" id="lbl-medium-desc">Win with 4</div>
+            </div>
+            <div class="lvl-card" id="lvl-hard" onclick="pickLevel('hard')">
+              <div class="lvl-icon">🔴</div>
+              <div class="lvl-name">HARD</div>
+              <div class="lvl-grid-badge">7 × 7</div>
+              <div class="lvl-desc" id="lbl-hard-desc">Win with 5</div>
+            </div>
+          </div>
+          <div id="diff-2p-note" style="display:none;margin-top:6px;font-family:var(--font-m);font-size:0.56rem;letter-spacing:0.1em;color:var(--muted);">* In 2-player or Online mode, difficulty controls the grid size.</div>
+        </div>
+
+        <!-- First move + display mode -->
+        <div class="setting-row">
+          <div id="first-move-cfg">
+            <div class="slbl">First Move</div>
+            <div class="tog-group">
+              <button class="tog sel c1" id="first-x" onclick="pickFirst('X')">X First</button>
+              <button class="tog" id="first-o" onclick="pickFirst('O')">O First</button>
+            </div>
+          </div>
+          <div>
+            <div class="slbl">Display Mode</div>
+            <div class="tog-group">
+              <button class="tog sel" id="dm-dark" onclick="pickDisplayMode('dark')">🌙 Dark</button>
+              <button class="tog" id="dm-light" onclick="pickDisplayMode('light')">☀️ Light</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Join Room Direct Input -->
+        <div id="join-room-section" style="display:none; margin-top:20px;">
+          <div class="slbl">Join Friend's Room (Optional)</div>
+          <input class="sname-input" id="join-code" type="text" placeholder="Enter 6-letter Room Code" maxlength="6" style="text-transform:uppercase;">
+          <div style="font-family:var(--font-m);font-size:0.56rem;letter-spacing:0.1em;color:var(--muted);margin-top:6px;">If joining a friend, you can leave difficulty and session name blank.</div>
+        </div>
+
+        <button class="launch-btn" id="btn-launch" onclick="launchGame()">▶ &nbsp; LAUNCH GAME</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     LOBBY OVERLAY (ONLINE ONLY)
+════════════════════════════════ -->
+<div class="lobby-ov" id="lobby" style="display:none;">
+    <div class="lobby-box">
+      <div class="lobby-spinner"></div>
+      <div class="lobby-title" id="lobby-title">Creating Room...</div>
+      <div class="lobby-txt" id="lobby-subtitle">Connecting to Nexus Multiplayer Gateway</div>
+      
+      <div id="lobby-link-wrap" style="display:none;">
+        <div class="slbl" style="justify-content:center;">Share this link to invite opponent</div>
+        <div class="link-box" id="lobby-link" onclick="copyLink()">https://...</div>
+        <div style="font-family:var(--font-m);font-size:0.56rem;color:var(--p1);margin-top:8px;" id="copy-status">Click to Copy!</div>
+      </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════
+     GAME
+════════════════════════════════ -->
+<div id="game" class="screen">
+  <div class="gtop" style="max-width:580px;width:100%;">
+    <div class="gtop-left">
+      <div class="gtop-name" id="g-session">MY GAME</div>
+      <div class="gtop-badge" id="g-badge">EASY · VS AI</div>
+    </div>
+    <div class="gtop-actions">
+      <button class="icon-btn" onclick="toggleMode()" title="Toggle theme">☀️</button>
+      <button class="icon-btn" onclick="openHowTo()">?</button>
+      <button class="icon-btn" onclick="showScreen('setup')">⚙</button>
+      <button class="icon-btn" onclick="resetToCover()">⌂</button>
+    </div>
+  </div>
+
+  <div class="score-row" style="max-width:580px;width:100%;">
+    <div class="sc-card sc-x active" id="card-x">
+      <div class="sc-sym">✕ — PLAYER X</div>
+      <div class="sc-nm" id="disp-x">Player X</div>
+      <div class="sc-val" id="score-x">0</div>
+    </div>
+    <div class="vs-mid">
+      <div class="vs-txt">VS</div>
+      <div class="draw-cnt">DRAWS<br><span id="score-tie">0</span></div>
+    </div>
+    <div class="sc-card sc-o" id="card-o">
+      <div class="sc-sym">○ — PLAYER O</div>
+      <div class="sc-nm" id="disp-o">Computer</div>
+      <div class="sc-val" id="score-o">0</div>
+    </div>
+  </div>
+
+  <div class="spill">
+    <div class="sp-dot" id="sp-dot"></div>
+    <span class="sp-txt" id="status-text">YOUR TURN</span>
+  </div>
+
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+    <div class="think-ov" id="think-ov">
+      <div class="think-ring"></div>
+      <div class="think-lbl" id="think-text">AI Thinking...</div>
+    </div>
+  </div>
+
+  <div class="ai-log" id="ai-log-wrap">
+    <div class="ai-log-hd">
+      <div class="ai-av" id="ai-av-icon">🤖</div>
+      <div class="ai-log-title" id="ai-log-title">AI Commentary</div>
+    </div>
+    <div class="ai-msgs" id="ai-msgs">
+      <div class="ai-m">Game initialized. Make your move — I see everything.</div>
+    </div>
+    
+    <!-- Chat input for online mode exclusively -->
+    <div id="chat-input-container" style="display:none; padding:10px; border-top:1px solid var(--border); background:rgba(0,0,0,0.15);">
+      <div class="chat-input-row">
+        <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." maxlength="120">
+        <button class="chat-submit" onclick="sendChat()">SEND</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="gctrl" id="gctrl">
+    <button class="gbtn gbtn-p" onclick="newRound()" id="btn-rematch">New Round</button>
+    <button class="gbtn gbtn-g" onclick="resetAll()" id="btn-reset-scores">Reset Scores</button>
+    <button class="gbtn gbtn-g" onclick="showScreen('setup')" id="btn-settings">Settings</button>
+  </div>
+</div>
+
+<!-- WIN BANNER -->
+<div class="win-banner" id="win-banner">
+  <div class="wb-emoji" id="wb-emoji">🏆</div>
+  <div class="wb-title" id="wb-title">WINNER!</div>
+  <div class="wb-sub" id="wb-sub">Player X takes the round</div>
+  <div class="wb-sc">
+    <div class="wbs"><div class="wbsv" style="color:var(--p1)" id="wb-sx">0</div><div class="wbsl" id="wb-lx">X</div></div>
+    <div class="wbs"><div class="wbsv" style="color:var(--muted)" id="wb-st">0</div><div class="wbsl">DRAWS</div></div>
+    <div class="wbs"><div class="wbsv" style="color:var(--p2)" id="wb-so">0</div><div class="wbsl" id="wb-lo">O</div></div>
+  </div>
+  <div class="wb-btns">
+    <button class="gbtn gbtn-p" onclick="requestRematch()">Play Again</button>
+    <button class="gbtn gbtn-g" onclick="hideBanner()">Dismiss</button>
+    <button class="gbtn gbtn-g" onclick="resetToCover()">Menu</button>
+  </div>
+</div>
+
+<!-- HOW TO PLAY -->
+<div class="modal-bg" id="htp-modal">
+  <div class="modal-box">
+    <div class="modal-hd">
+      <div class="modal-title">HOW TO PLAY</div>
+      <button class="modal-close" onclick="closeHowTo()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="htp-item"><div class="htp-n">1</div><div class="htp-t"><p>Set Up Your Game</p><span>Pick a theme, name your players, set difficulty and mode. </span></div></div>
+      <div class="htp-item"><div class="htp-n">2</div><div class="htp-t"><p>Online Multiplayer</p><span>In Online mode, simply click Launch and share the link with a friend! Note: Difficulty dictates the grid size.</span></div></div>
+      <div class="htp-item"><div class="htp-n">3</div><div class="htp-t"><p>Get Three in a Row</p><span>Align the required number of marks to win! (3 for Easy, 4 for Medium, 5 for Hard).</span></div></div>
+      <div class="htp-item"><div class="htp-n">4</div><div class="htp-t"><p>Outsmart the AI</p><span>Play VS Computer! Hard mode uses Minimax and intelligent heuristics.</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Core Game Logic -->
+<script src="/js/game.js"></script>
+</body>
+</html>
